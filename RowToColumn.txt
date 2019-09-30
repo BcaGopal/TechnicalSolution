@@ -1,0 +1,136 @@
+
+
+DECLARE   @SQLQuery AS NVARCHAR(MAX)
+DECLARE   @PivotColumns AS NVARCHAR(MAX) 
+--Get unique values of pivot column  
+SELECT   @PivotColumns= COALESCE(@PivotColumns + ',','') + QUOTENAME(RegistrationType)
+FROM (SELECT DISTINCT RegistrationType from Web.PersonRegistrations  ) --WHERE PersonId=33
+ AS PivotExample  
+
+SET   @SQLQuery = 
+    N' SELECT PersonId,'+   @PivotColumns + ' into '+ 'TempPersonRegistrations' +' FROM 
+(
+SELECT PersonId,
+RegistrationType,
+RegistrationNo from Web.PersonRegistrations --WHERE PersonId=33
+) H
+PIVOT( max(RegistrationNo) 
+          FOR RegistrationType IN (' + @PivotColumns + ')) AS P'
+
+
+EXEC sp_executesql @SQLQuery
+
+
+SELECT * FROM TempPersonRegistrations
+DROP TABLE TempPersonRegistrations
+
+
+
+SELECT * FROM  Web.PersonRegistrations
+
+
+
+
+
+
+
+
+SELECT * FROM Web.PersonRegistrations
+
+DECLARE @colsUnpivot AS NVARCHAR(MAX),
+   @query  AS NVARCHAR(MAX)
+
+select @colsUnpivot 
+  = stuff((select ','+quotename(C.RegistrationType)
+           from Web.PersonRegistrations C
+           GROUP BY C.RegistrationType
+           for xml path('')), 1, 1, '')
+
+
+SELECT @colsUnpivot
+
+
+
+SELECT * FROM 
+(
+SELECT PersonId,RegistrationType,RegistraTionNo FROM Web.PersonRegistrations
+) AS PersonRegistrations
+PIVOT
+(max(RegistraTionNo)
+ FOR RegistrationType IN ([Aadhar No],[PAN No],[Gst No],[Cst No],[Tin No])
+)
+AS PIvotTable;
+
+
+SELECT * FROM 
+(
+SELECT PersonId,RegistrationType,RegistraTionNo FROM Web.PersonRegistrations
+) AS PersonRegistrations
+PIVOT
+(max(RegistraTionNo)
+ FOR RegistrationType IN (SELECT DISTINCT RegistrationType FROM  Web.PersonRegistrations)
+)
+AS PIvotTable;
+
+
+SELECT * FROM Web.SaleInvoiceLineCharges
+
+
+
+
+DECLARE @colsUnpivot AS NVARCHAR(MAX),
+   @query  AS NVARCHAR(MAX)
+
+select @colsUnpivot 
+  = stuff((select ','+quotename(C.ChargeName)
+           from Web.SaleInvoiceLineCharges S
+           LEFT JOIN Web.Charges C ON C.ChargeId=S.ChargeId
+           GROUP BY C.ChargeName
+           for xml path('')), 1, 1, '')
+
+
+SELECT @colsUnpivot
+
+SELECT * FROM 
+(
+SELECT S.LineTableId,C.ChargeName,Amount FROM Web.SaleInvoiceLineCharges S
+LEFT JOIN Web.Charges C ON C.ChargeId=S.ChargeId
+) AS SaleInvoiceLineCharges
+PIVOT
+(max(Amount)
+FOR ChargeName IN ([CGST],[Gross Amount],[Sales Tax Taxable Amt],[SGST])
+) AS PIvotTable;
+------------------------
+
+DECLARE @colsUnpivot AS NVARCHAR(MAX),
+   @query  AS NVARCHAR(MAX)
+
+select @colsUnpivot 
+  = stuff((select ','+quotename(C.ChargeName)
+           FROM Web.SaleInvoiceHeaderCharges S
+           LEFT JOIN Web.Charges C ON C.ChargeId=S.ChargeId
+           GROUP BY C.ChargeName
+           for xml path('')), 1, 1, '')
+           
+SELECT @colsUnpivot           
+
+SELECT * FROM Web.SaleInvoiceHeaderCharges
+
+SELECT * FROM 
+(
+SELECT H.HeaderTableId,C.ChargeName,H.Amount
+FROM Web.SaleInvoiceHeaderCharges H
+LEFT JOIN web.Charges C ON C.ChargeId=H.ChargeId
+) AS SaleInvoiceHeaderCharges
+PIVOT
+(MAX(Amount)
+FOR ChargeName IN ([Round Off],[Other Charges],[Sales Tax Taxable Amt],[CGST],[SGST],[Sub Total],[Discount],[Gross Amount],[Sub Total 2],[Net Amount])
+) AS PivotTable;
+
+SELECT * FROM Web.SaleInvoiceHeaderCharges WHERE HeaderTableId=22814
+
+
+
+CarpetDesignlistReport
+CarpetProductlistReport
+

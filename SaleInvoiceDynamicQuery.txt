@@ -1,0 +1,196 @@
+
+ALTER PROCEDURE Web.StdDocPrint_SaleInvoice 
+@ReportType VARCHAR(Max)=NULL,
+@Id INT 
+	AS
+	BEGIN 
+
+Declare @ParameterDefinition NVARCHAR(4000);
+
+ SELECT @ParameterDefinition='
+ @ReportTypePerameter VARCHAR(Max)=NULL,
+ @IdPerameter Int=NULL
+';
+
+DECLARE @BaleSqlClause AS NVARCHAR(Max)
+DECLARE @SelectClause AS NVARCHAR(Max)
+DECLARE @FromClause AS NVARCHAR(Max)
+	DECLARE @SQL AS NVARCHAR(Max)
+	SET @SQL=''
+	
+  SET @BaleSqlClause='
+	DECLARE  @VBaleCount TABLE 
+	(
+	SaleInvoiceHeaderId INT ,
+	TotalRugRolls INT,
+	TotalFinishedProductRolls INT,
+	TotalRolls INT
+	)
+ INSERT INTO @VBaleCount
+	SELECT H.SaleInvoiceHeaderId,        IsNull(Sum(VBales.RugRolls),0) AS TotalRugRolls,       
+			IsNull(Sum(VBales.FinishedRolls),0) AS TotalFinishedProductRolls,    
+			 IsNull(Sum(VBales.TotalRolls),0) AS TotalRolls       
+			FROM  Web.SaleInvoiceHeaders H        
+			LEFT JOIN (           
+			SELECT DISTINCT  L.SaleInvoiceHeaderId, Pl.BaleNo,           
+			CASE WHEN Pt.ProductTypeName = ''Rug'' THEN 1 ELSE 0 END  AS RugRolls,           
+			CASE WHEN Pt.ProductTypeName <> ''Rug'' THEN 
+			(CASE WHEN charindex(''-'', Pl.BaleNo) = 0 THEN 1 ELSE 
+			Convert(INT, Reverse(Substring(Reverse(Pl.BaleNo),0,charindex(''-'',Reverse(Pl.BaleNo))))) -  
+			Convert(INT,Substring(Pl.BaleNo,0,charindex(''-'',Pl.BaleNo))) + 1 
+			END) ELSE 0 END  AS FinishedRolls,           
+			1 AS TotalRolls           
+			FROM  Web.SaleInvoiceLines L            
+			LEFT JOIN Web.SaleDispatchLines DL ON L.SaleDispatchLineId = Dl.SaleDispatchLineId           
+			LEFT JOIN Web.PackingLines PL ON Dl.PackingLineId = Pl.PackingLineId           
+			LEFT JOIN Web.Products P ON Pl.ProductId = P.ProductId           
+			LEFT JOIN Web.ProductGroups Pg ON P.ProductGroupId = Pg.ProductGroupId       
+			LEFT JOIN Web.ProductTypes Pt ON Pg.ProductTypeId = Pt.ProductTypeId       
+			WHERE L.SaleInvoiceHeaderId = @IdPerameter
+		) AS VBales ON H.SaleInvoiceHeaderId = VBales.SaleInvoiceHeaderId       
+		GROUP BY H.SaleInvoiceHeaderId
+	'
+	SET @SelectClause='	
+	DECLARE @TotalAmount DECIMAL 
+    SET @TotalAmount = (SELECT Max(Amount) FROM Web.SaleInvoiceHeaderCharges WHERE HeaderTableId = @IdPerameter AND ChargeId = 34 ) 
+
+    DECLARE @UnitDealCnt INT
+	SELECT @UnitDealCnt=sum(CASE WHEN U.UnitId != L.DealUnitId THEN 1 ELSE 0 END )
+	FROM Web.Saleinvoicelines L
+	LEFT JOIN Web.Products P WITH (Nolock) ON P.ProductId=L.ProductId
+	LEFT JOIN web.units U WITH (Nolock) ON U.UnitId=P.UnitId
+
+    DECLARE @DocDate DATETIME
+	DECLARE @DivisionId INT 
+	DECLARE @SiteId INT 
+	DECLARE @SalesTaxProductCodeCaption VARCHAR(100)=NULL
+	SELECT @DocDate=DocDate,@DivisionId=DivisionId,@SiteId=SiteId FROM Web.SaleInvoiceHeaders WHERE SaleInvoiceHeaderId=@IdPerameter
+    SELECT @SalesTaxProductCodeCaption=SalestaxProductCodeCaption FROM web.SiteDivisionSettings WHERE convert(DATE,@DocDate) BETWEEN convert(DATE,StartDate) AND convert(DATE,IsNull(EndDate,getdate())) AND DivisionId=@DivisionId AND SiteId=@SiteId ORDER BY StartDate
+	
+	SELECT 
+	--Header Table Fields	
+	H.SaleInvoiceHeaderId,max(H.DocTypeId) AS DocTypeId,max(H.DocNo) AS DocNo,max(DocIdCaption)+'' No'' AS DocIdCaption ,
+	max(H.SiteId) AS SiteId,max(H.DivisionId) AS DivisionId,max(H.DocDate) AS DocDate,max(DTS.DocIdCaption) +'' Date'' AS DocIdCaptionDate,	
+	max(H.CreditDays) AS CreditDays,max(H.Remark) AS Remark,max(DT.DocumentTypeShortName) AS DocumentTypeShortName,	
+	NULL  AS ModifiedBy,
+	max(H.ModifiedDate) AS ModifiedDate,max(CASE WHEN Isnull(H.Status,0)=0 OR Isnull(H.Status,0)=8 THEN 0 ELSE 1 END)  AS Status,
+	max(CUR.Name) AS CurrencyName,max(CASE WHEN SPR.[Party GST NO] IS NULL THEN ''Yes'' ELSE ''No'' END ) AS ReverseCharge,
+	max(VDC.CompanyName) AS CompanyName,max(P.Name) AS PartyName, max(DTS.PartyCaption) AS  PartyCaption, max(P.Suffix) AS PartySuffix,	
+	max(isnull(PA.Address,'''')+'' ''+isnull(C.CityName,'''')+'',''+isnull(PA.ZipCode,'''')+'',''+isnull(S.StateName,'''')+'',''+isnull(S.StateCode,'''')) AS PartyAddress,
+	max(Cou.CountryName) AS Country,
+	max(isnull(S.StateName,'''')) AS PartyStateName,max(isnull(S.StateCode,'''')) AS PartyStateCode,	
+	max(P.Mobile) AS PartyMobileNo,max([Party TIN NO]) AS [Party TIN NO],max([Party PAN NO]) AS [Party PAN NO],
+	max([Party AADHAR NO]) AS [Party AADHAR NO],max([Party GST NO]) AS [Party GST NO],max([Party CST NO]) AS [Party CST NO],
+	max(PCH.ProductContentName) AS Composions,
+	max(SDH.DocNo) AS PlanNo,max(DTS.ContraDocTypeCaption) AS ContraDocTypeCaption,	
+   	max(SOH.BuyerOrderNo) AS SaleOrdDocNo,
+	max(format(SOH.DocDate,''dd/MMM/yy'')) AS SaleOrdDate,
+	max(DTS.SignatoryMiddleCaption) AS SignatoryMiddleCaption,max(DTS.SignatoryRightCaption) AS SignatoryRightCaption,
+	max(PD.ProductName) AS ProductName,max(DTS.ProductCaption) AS ProductCaption,max(U.UnitName) AS UnitName,max(U.DecimalPlaces) AS DecimalPlaces,max(DU.UnitName) AS DealUnitName,max(DTS.DealQtyCaption) AS DealQtyCaption,max(DU.DecimalPlaces) AS DealDecimalPlaces,
+	sum(isnull(L.Qty,0)) AS Qty,max(isnull(L.Rate,0)) AS Rate,sum(isnull(L.Amount,0)) AS Amount,sum(isnull(L.DealQty,0)) AS DealQty,
+	max(D1.Dimension1Name) AS Dimension1Name,max(DTS.Dimension1Caption) AS Dimension1Caption,max(D2.Dimension2Name) AS Dimension2Name,max(DTS.Dimension2Caption) AS Dimension2Caption,max(D3.Dimension3Name) AS Dimension3Name,max(DTS.Dimension3Caption) AS Dimension3Caption,max(D4.Dimension4Name) AS Dimension4Name,max(DTS.Dimension4Caption) AS Dimension4Caption,
+    max(DTS.SpecificationCaption) AS SpecificationCaption,max(DTS.SignatoryleftCaption) AS SignatoryleftCaption,max(L.Remark) AS LineRemark,
+	 Max(VRS.StandardSizeName) AS StandardSizeName,
+    max(pig.ProductInvoiceGroupName) AS ProductInvoiceGroupName,
+    max(isnull(VRS.StandardSizeArea,0)) AS StandardSizeArea,
+   Round(sum(isnull(L.Qty,0) *(isnull(VRS.StandardSizeArea,0) * 0.092903)),2) AS SqMeterArea,
+   Max(ProductName) AS Design,max(STC.Code) AS SalesTaxProductCodes,
+   @SalesTaxProductCodeCaption AS SalesTaxProductCodeCaption,
+   max((CASE WHEN DTS.PrintProductGroup >0 THEN isnull(PG.ProductGroupName,'''') ELSE '''' END)+(CASE WHEN DTS.PrintProductdescription >0 THEN isnull('',''+PD.Productdescription,'''') ELSE '''' END)) AS ProductGroupName,
+   	max(DTS.ProductGroupCaption) AS ProductGroupCaption,max(isnull(CGPD.PrintingDescription,CGPD.ChargeGroupProductName)) AS ChargeGroupProductName,
+   	max(PL.LotNo) AS LotNo, 
+	max(PL.BaleNo) AS BaleNo, 
+	max(CASE WHEN DTS.PrintSpecification >0 THEN   SOL.Specification ELSE '''' END)  AS Specification,
+	isnull(@TotalAmount,0) AS NetAmount,    
+	max(CGP.ChargeGroupPersonName) AS ChargeGroupPersonName,
+	@UnitDealCnt  AS DealUnitCnt,
+	Null AS SubReportProcList,
+	max(CASE WHEN Isnull(H.Status,0)=0 OR Isnull(H.Status,0)=8 THEN ''Provisional '' +isnull(DT.PrintTitle,DT.DocumentTypeName) ELSE isnull(DT.PrintTitle,DT.DocumentTypeName) END) AS ReportTitle,
+	''"SUPPLY MEANT FOR EXPORT UNDER LUT S.NO. 25/2017 DT. 10.07.2017 WITHOUT PAYMENT OF INTEGRATED TAX (IGST)"'' AS TitleDetail,
+   NULL	 AS ReportName,		
+	max(SalesTaxGroupProductCaption) AS SalesTaxGroupProductCaption,
+	 max(Sm.ShipMethodName) AS ShipMethodName, max(SIHD.DestinationPort) AS DestinationPort, 
+	 Max(SIHD.PortOfLoading) PortOfLoading, Max(SIHD.FinalPlaceOfDelivery) FinalPlaceOfDelivery,
+	 Max(SIHD.PlaceOfPreCarriage) AS PlaceOfPreCarriage,
+	 (Case when max(H.DocTypeId)=308 then ''USE: GNX 100'' else Max(SIHD.OtherRefrence) end ) as OtherRefrence,	 
+	  ''INDIA'' AS CompanyCountry,
+	max(SIHD.FinalPlaceOfDelivery) AS FinalPlaceOfDelivery,
+   Sum(IsNull(Pl.GrossWeight,0)) AS TotalGrossWeight,
+   	Sum(IsNull(Pl.NetWeight,0)) AS TotalNetWeight,
+   	max(SIHD.DescriptionOfGoods) AS DescriptionOfGoods,
+   	max(VBaleCount.TotalRugRolls) AS TotalRugRolls,max(VBaleCount.TotalFinishedProductRolls) AS TotalFinishedProductRolls, 
+   	max(VBaleCount.TotalRolls) AS TotalRolls,   	
+   	max(SIHD.PackingMaterialDescription) AS PackingMaterialDescription,
+   max(Det.DeliveryTermsName) AS DeliveryTermsName,
+   max(SIHD.TermsOfSale) AS TermsOfSale,
+   max(VRS.standardSizeArea) AS SortArea,
+   SOL.SaleOrderheaderId AS SaleOrderheaderId,
+   max(CASE WHEN VBaleCount.TotalRugRolls <> 0 AND VBaleCount.TotalFinishedProductRolls <> 0      THEN Convert(NVARCHAR,VBaleCount.TotalRugRolls) +  '' + ''  + Convert(NVARCHAR,VBaleCount.TotalFinishedProductRolls) + '' = '' + Convert(NVARCHAR,VBaleCount.TotalRolls)       WHEN VBaleCount.TotalRugRolls <> 0 AND VBaleCount.TotalFinishedProductRolls = 0        THEN Convert(NVARCHAR, VBaleCount.TotalRugRolls) 	       WHEN VBaleCount.TotalRugRolls = 0 AND VBaleCount.TotalFinishedProductRolls <> 0        THEN Convert(NVARCHAR,VBaleCount.TotalFinishedProductRolls) 	  END) AS TotalRoleText,     
+   max(CASE WHEN VBaleCount.TotalRugRolls <> 0 AND VBaleCount.TotalFinishedProductRolls <> 0      THEN ''Rolls & Pkgs.''  WHEN VBaleCount.TotalRugRolls <> 0 AND VBaleCount.TotalFinishedProductRolls = 0        THEN ''Rolls.''       WHEN VBaleCount.TotalRugRolls = 0 AND VBaleCount.TotalFinishedProductRolls <> 0        THEN  ''Pkgs'' 	  END) AS TotalRoleUnitText
+   	   		  	'
+
+
+SET @FromClause ='
+    FROM Web.SaleInvoiceHeaders H WITH (Nolock)
+	LEFT JOIN Web.SaleInvoiceHeaderDetail SIHD WITH (Nolock) ON SIHD.SaleInvoiceHeaderid=H.SaleInvoiceHeaderId 
+	LEFT JOIN @VBaleCount VBaleCount ON VBaleCount.SaleInvoiceHeaderid=H.SaleInvoiceHeaderId 
+	LEFT JOIN web.DocumentTypes DT WITH (Nolock) ON DT.DocumentTypeId=H.DocTypeId
+	LEFT JOIN Web._DocumentTypeSettings DTS WITH (Nolock) ON DTS.DocumentTypeId=DT.DocumentTypeId
+	LEFT JOIN Web.SaleInvoiceSettings JIS WITH (Nolock) ON JIS.DocTypeId=DT.DocumentTypeId
+	LEFT JOIN web.ViewDivisionCompany VDC WITH (Nolock) ON VDC.DivisionId=H.DivisionId
+	LEFT JOIN Web.Sites SI WITH (Nolock) ON SI.SiteId=H.SiteId
+	LEFT JOIN Web.Divisions DIV WITH (Nolock) ON DIV.DivisionId=H.DivisionId	
+	LEFT JOIN Web.Companies Com ON Com.CompanyId = DIV.CompanyId
+	LEFT JOIN Web.Cities CC WITH (Nolock) ON CC.CityId=Com.CityId
+	LEFT JOIN Web.States CS WITH (Nolock) ON CS.StateId=CC.StateId
+	LEFT JOIN Web.People P WITH (Nolock) ON P.PersonID=H.SaletoBuyerId 
+	LEFT JOIN (SELECT TOP 1 * FROM web.SiteDivisionSettings WHERE convert(DATE,@DocDate) BETWEEN convert(DATE,StartDate) AND convert(DATE,IsNull(EndDate,getdate())) AND DivisionId=@DivisionId ORDER BY StartDate) SDS  ON H.DivisionId = SDS.DivisionId AND H.SiteId = SDS.SiteId	
+  	LEFT JOIN (SELECT * FROM Web.PersonAddresses WITH (nolock) WHERE AddressType IS NULL) PA ON PA.PersonId = P.PersonID 
+	LEFT JOIN Web.Cities C WITH (nolock) ON C.CityId = PA.CityId
+	LEFT JOIN Web.States S WITH (Nolock) ON S.StateId=C.StateId
+	LEFT JOIN Web.Countries Cou WITH (Nolock) ON S.CountryId = Cou.CountryId 
+	LEFT JOIN web.ChargeGroupPersons CGP WITH (Nolock) ON CGP.ChargeGroupPersonId=H.SalesTaxGroupPersonId
+	LEFT JOIN Web.Currencies CUR WITH (Nolock) ON CUR.Id=H.CurrencyId
+	LEFT JOIN Web.SaleInvoiceLines L WITH (Nolock) ON L.SaleinvoiceheaderId=H.SaleInvoiceHeaderId
+	LEFT JOIN Web.SaleDispatchLines SDL WITH (Nolock) ON SDL.SaleDispatchLineId=L.SaleDispatchLineId
+	LEFT JOIN Web.SaleDispatchHeaders SDH WITH (Nolock) ON SDH.SaleDispatchHeaderId=SDL.SaleDispatchHeaderId
+	LEFT JOIN Web.DeliveryTerms Det ON SDH.DeliveryTermsId = Det.DeliveryTermsId 
+	LEFT JOIN Web.ShipMethods Sm ON SDH.ShipMethodId = Sm.ShipMethodId 
+	LEFT JOIN Web.PackingLines Pl ON Sdl.PackingLineId = Pl.PackingLineId		
+    LEFT JOIN web.SaleOrderLines SOl WITH (Nolock) ON SOL.SaleorderLineId=PL.saleorderLineId
+    LEFT JOIN Web.SaleOrderHeaders SOH WITH (Nolock) ON SOH.SaleorderHeaderId=SOL.SaleOrderheaderId     
+	LEFT JOIN web.Products PD WITH (Nolock) ON PD.ProductId=L.ProductId
+	LEFT JOIN web.FinishedProduct FP WITH (Nolock) ON FP.ProductId=L.ProductId
+	LEFT JOIN Web.ProductContentHeaders PCH WITH (Nolock) ON PCH.ProductContentHeaderId=ContentId
+	LEFT JOIN Web.ViewRugSize VRS WITH (Nolock) ON VRS.ProductId=L.ProductId 
+	LEFT JOIN Web.ProductInvoiceGroups Pig ON L.ProductInvoiceGroupId  = Pig.ProductInvoiceGroupId	
+	LEFT JOIN web.ProductGroups PG WITH (Nolock) ON PG.ProductGroupId=PD.ProductGroupid
+	LEFT JOIN Web.SalesTaxProductCodes STC WITH (Nolock) ON STC.SalesTaxProductCodeId= IsNull(PD.SalesTaxProductCodeId, Pg.DefaultSalesTaxProductCodeId)
+	LEFT JOIN Web.Dimension1 D1 WITH (Nolock) ON D1.Dimension1Id=L.Dimension1Id
+	LEFT JOIN web.Dimension2 D2 WITH (Nolock) ON D2.Dimension2Id=L.Dimension2Id
+	LEFT JOIN web.Dimension3 D3 WITH (Nolock) ON D3.Dimension3Id=L.Dimension3Id
+	LEFT JOIN Web.Dimension4 D4 WITH (nolock) ON D4.Dimension4Id=L.Dimension4Id
+	LEFT JOIN web.Units U WITH (Nolock) ON U.UnitId=PD.UnitId
+	LEFT JOIN web.Units DU WITH (Nolock) ON DU.UnitId=L.DealUnitId
+	LEFT JOIN Web.Std_PersonRegistrations SPR WITH (Nolock) ON SPR.CustomerId=H.SaleToBuyerId
+	LEFT JOIN web.ChargeGroupProducts CGPD WITH (Nolock) ON L.SalesTaxGroupProductId = CGPD.ChargeGroupProductId	
+   	WHERE H.SaleInvoiceHeaderId=@IdPerameter
+   	GROUP BY L.ProductId,L.Dimension1Id,L.Dimension2Id,L.Dimension3Id,L.Dimension4Id,L.Rate,SOL.SaleOrderheaderId,H.SaleInvoiceHeaderId
+	ORDER BY  max(SOH.DocNo),max(CASE WHEN PG.ProductTypeId=1 THEN PG.ProductGroupName ELSE ProductName END),max(VRS.standardSizeArea)--,max(L.Sr)
+'
+
+	
+
+
+SET @Sql=@BaleSqlClause+@SelectClause+@FromClause;
+
+
+PRINT @SelectClause;
+
+EXEC     sp_executeSQL 
+         @SQL,
+         @ParameterDefinition,
+		 @IdPerameter=@Id	
+ END
+GO
+

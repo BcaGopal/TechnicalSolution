@@ -1,0 +1,134 @@
+C:\Users\Gopal\Desktop\New folder (4)\
+D:\CloudMigration_Rug\Projects\Source\Jobs\Content\Chandra.jpg
+
+Dear all please stop the work on software due to some Technical reason for 10 min 
+dear all now you can start your work, Thanks
+
+https://suryadbvm.centralindia.cloudapp.azure.com/Reports/browse/
+Id:Deployer
+pwd:Passw0rd$321
+F:\Ftp\AppFiles\ReportImages
+
+
+https://blogs.msdn.microsoft.com/amb/2012/02/03/easiest-way-to-take-your-web-site-offline-iis-6-0-or-iis-7-5-with-net-4-0/
+------------------
+Data Source=13.71.5.33;Initial Catalog=homefurnishing;Integrated Security=false; User Id=appaccount; pwd=appact@321
+-----------
+Data Source=13.71.5.33;Initial Catalog=homefurnishing;Integrated Security=False;User Id=Deployer; pwd=Passw0rd$321
+
+
+
+Creditial For Cloud Server Data Base (User Permission)
+---------------------
+Data base Server Name=104.211.72.63
+Login:-testuser
+Password:-testuser123
+
+Creditial For Cloud Server Data Base (Admin Permission)
+uid:Deployer
+pwd:Passw0rd$321
+--------------------
+
+FileZilla Credential (FTP Detail)
+
+52.172.176.47
+52.172.176.47new test vm
+52.172.181.39 
+13.71.2.252
+Host:-104.211.72.63
+UserName:-deployer
+Password:-Passw0rd$321
+port-:990
+-
+--------------
+For  Remote Server Access
+
+VM:104.211.72.63:3389
+
+VM Server: SuryaDBPOC
+Pwd: surya_Poc123
+
+.............................
+Login:
+Azure site link: https://suryalogin.mypocsite.xyz
+publisher file: suryalogin.PublishSettings
+Visual studio project name: Web.Login
+
+https://suryalogin.azurewebsites.net/?returnurl=HomeFurnishing
+
+Menu:
+Azure site link: https://pocsuryamenu.mypocsite.xyz
+publisher file: pocsuryamenu.PublishSettings
+Visual studio project name: Module
+
+ =iif(Fields!OKMark.Value="1","?","û")
+
+Home furnishing:
+Azure site link: https://homefurnishing.mypocsite.xyz
+Publisher file: Suryahomefurnishing.PublishSettings
+Visual studio project: Jobs
+
+ 
+
+
+
+---------------
+
+
+
+Database user:
+testuser\testuser123
+
+
+Site#1:suryademoapp.azurewebsites.net
+Site#2:suryademojobs.azurewebsites.net
+Site#3:suryademocustsch.azurewebsites.net
+
+deployment:
+suryaftpuser1
+ftptestuser123
+
+
+Login link: https://104.211.72.63/Login
+Login ids:
+User:Pradeep
+Pwd:Poctester@123
+
+Credential to be used for deployment (cannot remote login using below account):
+User: Deployer
+pwd:Passw0rd$321
+Shared path: \\104.211.72.63\wwwroot
+
+
+SELECT Ct.ChargeTypeName, Cpr.ChargeGroupPersonName, Cpt.ChargeGroupProductName, Cgs.* 
+FROM Web.ChargeGroupSettings CGs
+LEFT JOIN Web.ChargeGroupPersons Cpr ON Cgs.ChargeGroupPersonId = Cpr.ChargeGroupPersonId
+LEFT JOIN Web.ChargeGroupProducts Cpt ON Cgs.ChargeGroupProductId = Cpt.ChargeGroupProductId
+LEFT JOIN Web.ChargeTypes Ct ON Cgs.ChargeTypeId = Ct.ChargeTypeId
+WHERE Cgs.ChargeGroupPersonId = 2
+AND Cpt.ChargeGroupProductName = 'GST 12%'
+
+
+https://msdn.microsoft.com/en-us/mt186501.aspx
+
+
+three points are pending we will mentation tomorrow
+
+
+
+executing shrink command on Log file the size of the file got reduced to 8MB.
+
+
+executing shrink command on Log file,file size did not reduce.
+
+
+In this Generated Rug services after that 
+
+Submit  Karana Hi 18-0722,0706,0694,0692,0662
+
+
+  <add key="RSID" value="appaccount" />
+    <add key="RSPWD" value="appact@321" />
+    <add key="RSDomain" value="suryadbvm" />
+    <add key="RSServer" value="https://suryadbvm.centralindia.cloudapp.azure.com/ReportServer/" />
+    <add key="RSPath" value="/SuryaRugReports/" />

@@ -1,0 +1,242 @@
+
+ALTER PROCEDURE Web.spRep_DebitorOutstandingFIFO
+		@LedgerAccountGroupId VARCHAR(Max)=NULL,
+		@AsOnDate SMALLDATETIME=NULL,
+		@LedgerAccountId VARCHAR(max)=NULL,
+		@Site VARCHAR(max)=NULL,
+		@Division VARCHAR(max)=NULL,
+		@DocumentType VARCHAR(max)=NULL,		
+		@ProcessId VARCHAR(max)=NULL,
+		@CostCenter VARCHAR(max)=NULL,
+		@AgeingDate VARCHAR(max)='Doc Date',
+		@Interval INT =30,
+	    @LessAmount DECIMAL(18,4)=NULL,
+	    @GraterAmount DECIMAL(18,4)=NULL,
+	    @ReportType VARCHAR(max)=NULL
+     
+AS
+BEGIN
+
+DECLARE  @MinimumAge INT =0
+
+SET @AsOnDate=(CASE WHEN @AsOnDate IS NULL THEN getdate() ELSE @AsOnDate END) 
+
+
+
+Declare @ParameterDefinition NVARCHAR(4000);
+ SELECT @ParameterDefinition='
+		@LedgerAccountGroupIdPerameter VARCHAR(Max)=NULL,
+		@AsOnDatePerameter SMALLDATETIME=NULL,
+		@LedgerAccountIdPerameter VARCHAR(max)=NULL,
+		@SitePerameter VARCHAR(max)=NULL,
+		@DivisionPerameter VARCHAR(max)=NULL,
+		@DocumentTypePerameter VARCHAR(max)=NULL,		
+		@ProcessIdPerameter VARCHAR(max)=NULL,
+		@CostCenterPerameter VARCHAR(max)=NULL,
+		@AgeingDatePerameter VARCHAR(max)=NULL,
+		@IntervalPerameter INT =NUll,
+		@MinimumAgePerameter int=NUll,		 
+		@LessAmountPerameter DECIMAL(18,4)=NULL,
+		@GraterAmountPerameter DECIMAL(18,4)=NULL,
+		@ReportTypePerameter varchar(Max)=NUll
+';
+
+
+DECLARE @HeadCondStr AS NVARCHAR(Max)
+DECLARE @BillbalanceAmtCond AS NVARCHAR(Max)
+DECLARE @SQL AS NVARCHAR(Max)
+SET @HeadCondStr=''
+SET @BillbalanceAmtCond=''
+SET @SQL=''
+
+
+IF (@AsOnDate is NOT NULL) BEGIN SET @HeadCondStr += N' And  H.DocDate <= @AsOnDatePerameter ' END 
+if ( @Site is NOT NULL) BEGIN SET @HeadCondStr += N' And H.SiteId IN (SELECT Items FROM [dbo].[Split] (@SitePerameter, '',''))' END
+if ( @Division is NOT NULL) BEGIN SET @HeadCondStr += N' And H.DivisionId IN (SELECT Items FROM [dbo].[Split] (@DivisionPerameter, '',''))' END
+if ( @LedgerAccountGroupId is NOT NULL) BEGIN SET @HeadCondStr += N' And LA.LedgerAccountGroupId IN (SELECT Items FROM [dbo].[Split] (@LedgerAccountGroupIdPerameter, '',''))' END
+if ( @LedgerAccountId is NOT NULL) BEGIN SET @HeadCondStr += N' And L.LedgerAccountId IN (SELECT Items FROM [dbo].[Split] (@LedgerAccountIdPerameter, '',''))' END
+if ( @DocumentType is NOT NULL) BEGIN SET @HeadCondStr += N' And H.DocTypeId IN (SELECT Items FROM [dbo].[Split] (@DocumentTypePerameter, '',''))' END
+if ( @ProcessId is NOT NULL) BEGIN SET @HeadCondStr += N' And H.ProcessId IN (SELECT Items FROM [dbo].[Split] (@ProcessIdPerameter, '',''))' END
+if ( @CostCenter is NOT NULL) BEGIN SET @HeadCondStr += N' And L.CostCenterId IN (SELECT Items FROM [dbo].[Split] (@CostCenterPerameter, '',''))' END
+ 
+if ( @GraterAmount is NOT NULL) BEGIN SET @HeadCondStr += N' And LAS.Balance > @GraterAmountPerameter ' END 
+if ( @LessAmount is NOT NULL) BEGIN SET @HeadCondStr += N' And  LAS.Balance < @LessAmountPerameter ' END 
+          
+
+SET @SQL='
+Create  TABLE #LedgerAccounts 
+(
+LedgerAccountId INT ,
+Balance DECIMAL(38,4)
+) 
+
+INSERT INTO  #LedgerAccounts
+SELECT * FROM 
+(
+SELECT L.LedgerAccountId,sum(isnull(L.AmtDr,0))-sum(isnull(L.AmtCr,0)) AS Balance FROM 
+Web.Ledgers L WITH (Nolock)
+GROUP BY L.LedgerAccountId
+HAVING sum(isnull(L.AmtDr,0))-sum(isnull(L.AmtCr,0)) >0
+) H
+
+CREATE TABLE #TempLedger 
+(  
+	LedgerId INT,   	
+	DocTypeId INT,
+	DocNo NVARCHAR(50),
+	DivisionId INT,
+	SiteId INT,
+	ProcessId INT,
+	CostCenterId INT, 
+   	DocDate SMALLDATETIME,  
+   	DueDate SMALLDATETIME,  
+   	LedgerAccountId INT,  
+   	AmtDr DECIMAL(18,4),  
+   	Priority INT  
+)
+
+INSERT INTO #TempLedger(LedgerId, DocTypeId, DocNo, DivisionId, SiteId, ProcessId, CostCenterId, Priority, DocDate, DueDate, LedgerAccountId, AmtDr)
+SELECT L.LedgerId, H.DocTypeId, H.DocNo, H.DivisionId, H.SiteId, H.ProcessId, L.CostCenterId, L.Priority, H.DocDate, L.DueDate, L.LedgerAccountId, L.AmtDr 
+FROM web.LedgerHeaders H
+LEFT JOIN Web.Ledgers L ON H.LedgerHeaderId = L.LedgerHeaderId 
+LEFT JOIN web.LedgerAccounts LA ON L.LedgerAccountId = LA.LedgerAccountId 
+left Join #LedgerAccounts LAS on LAS.LedgerAccountId=L.LedgerAccountId
+--LEFT JOIN Web.PersonProcesses PP WITH (Nolock) ON PP.PersonId=LA.PersonId
+WHERE 1=1 '+@HeadCondStr+'
+AND L.AmtDr > 0
+
+
+
+CREATE TABLE #TempLedgerBal 
+(  
+			
+	LedgerAccountId INT,
+	DivisionId INT,
+	SiteId INT,
+	BalanceAmt DECIMAL(18,4)
+)
+
+
+INSERT INTO #TempLedgerBal(LedgerAccountId, SiteId, DivisionId, BalanceAmt)
+SELECT L.LedgerAccountId, H.SiteId, H.DivisionId , Sum(L.AmtDr) - Sum(L.AmtCr) AS BalanceAmt
+FROM Web.LedgerHeaders H
+LEFT JOIN web.Ledgers L ON H.LedgerHeaderId = L.LedgerHeaderId 
+LEFT JOIN web.LedgerAccounts LA ON L.LedgerAccountId = LA.LedgerAccountId 
+left Join #LedgerAccounts LAS on LAS.LedgerAccountId=L.LedgerAccountId
+--LEFT JOIN Web.PersonProcesses PP WITH (Nolock) ON PP.PersonId=LA.PersonId
+WHERE 1=1 '+@HeadCondStr+'
+GROUP BY L.LedgerAccountId, H.SiteId, H.DivisionId  HAVING Sum(L.AmtDr) - Sum(L.AmtCr) > 0
+
+
+
+
+
+
+CREATE TABLE #TempLedgerAdjustment 
+(  
+	LedgerId INT,
+	DocTypeId INT,
+	DocNo NVARCHAR(50),
+	ProcessId INT,
+	CostCenterId INT,
+	DivisionId INT,
+	SiteId INT,
+   	DocDate SMALLDATETIME,  
+   	DueDate SMALLDATETIME,  
+   	LedgerAccountId INT,
+   	AmtDr DECIMAL(18,4),  
+   	TotalBalanceAmt DECIMAL(18,4),
+   	BillBalanceAmt DECIMAL(18,4)
+)
+
+DELETE FROM #TempLedgerAdjustment
+
+INSERT INTO #TempLedgerAdjustment (LedgerId, DivisionId, SiteId, DocTypeId, DocNo, ProcessId, CostCenterId, DocDate, DueDate, LedgerAccountId, AmtDr, TotalBalanceAmt, BillBalanceAmt) 
+SELECT p.LedgerId, P.divisionId, p.SiteId, p.DocTypeId, p.DocNo, p.ProcessId, p.CostCenterId, p.DocDate, p.DueDate, P.LedgerAccountId, IsNull(p.AmtDr,0) AS PendingSaleOrdeQty, s.BalanceAmt, 
+
+CASE WHEN IsNull(p.sum_AmtDr,0) - IsNull(s.sum_BalanceAmt,0) + IsNull(s.BalanceAmt,0) < IsNull(s.sum_BalanceAmt,0) -IsNull(p.sum_AmtDr,0) + IsNull(p.AmtDr,0)  
+THEN CASE WHEN IsNull(p.AmtDr,0) <  IsNull(p.sum_AmtDr,0)  - IsNull(s.sum_BalanceAmt,0)  + IsNull(s.BalanceAmt,0)   
+        THEN IsNull(p.AmtDr,0)   
+        ELSE CASE WHEN IsNull(s.BalanceAmt,0) < IsNull(p.sum_AmtDr,0)  - IsNull(s.sum_BalanceAmt,0)  + IsNull(s.BalanceAmt,0)  
+                  THEN IsNull(s.BalanceAmt,0) ELSE IsNull(p.sum_AmtDr,0)  - IsNull(s.sum_BalanceAmt,0)  + IsNull(s.BalanceAmt,0) END END  
+ELSE  
+CASE WHEN IsNull(p.AmtDr,0) <  IsNull(s.sum_BalanceAmt,0)  - IsNull(p.sum_AmtDr,0)  + IsNull(p.AmtDr,0)  
+THEN IsNull(p.AmtDr,0) ELSE   
+   CASE WHEN IsNull(s.BalanceAmt,0) < IsNull(s.sum_BalanceAmt,0)  - IsNull(p.sum_AmtDr,0)  + IsNull(p.AmtDr,0)  
+        THEN IsNull(s.BalanceAmt,0) ELSE IsNull(s.sum_BalanceAmt,0)  - IsNull(p.sum_AmtDr,0)  + IsNull(p.AmtDr,0) END END END AS Qty  
+FROM (  
+	SELECT p.*,  Sum(AmtDr) OVER(PARTITION BY LedgerAccountId, P.SiteId, P.DivisionId ORDER BY Priority DESC, DocDate Desc, LedgerId) sum_AmtDr   
+	FROM #TempLedger p   
+) As p   
+LEFT JOIN 
+(  
+	SELECT s.*, SUM(BalanceAmt) OVER (PARTITION BY LedgerAccountId, S.SiteId, s.DivisionId ORDER BY s.LedgerAccountId)  sum_BalanceAmt   
+	FROM #TempLedgerBal s   	
+) AS s  ON  s.LedgerAccountId   = p.LedgerAccountId AND S.SiteId = P.SiteId AND S.DivisionId = P.DivisionId
+AND IsNull(p.sum_AmtDr,0)  > IsNull(s.sum_BalanceAmt,0)  - IsNull(s.BalanceAmt,0)    
+AND IsNull(s.sum_BalanceAmt,0)  > IsNull(p.sum_AmtDr,0)  - IsNull(p.AmtDr,0)    
+ORDER BY  p.LedgerAccountId, p.DocDate
+
+
+
+
+--DECLARE @LedgerAcc VARCHAR(Max)=NULL
+
+
+--SELECT @LedgerAcc=COALESCE(@LedgerAcc+'','', '''') + convert(VARCHAR,LedgerAccountId) FROM 
+--(
+--SELECT LedgerAccountId,sum(BillBalanceAmt) AS BillbalanceAmt FROM  #TempLedgerAdjustment L
+--WHERE L.TotalBalanceAmt IS NOT NULL
+--GROUP BY LedgerAccountId
+--) H
+--WHERE 1=1 '+@BillbalanceAmtCond+'
+
+
+
+
+
+
+
+SELECT La.LedgerAccountName, La.LedgerAccountSuffix, l.*,
+DT.DocumentTypeShortName,
+''Debtors Outstanding [FIFO]''  AS ReportTitle, NULL AS SubReportProcList,
+ DATEDIFF(day,L.DocDate,getdate()) AS DiffDay, 
+ 
+ (CASE 	WHEN datediff(day,(CASE WHEN @AgeingDatePerameter=''Doc Date'' Then L.DocDate ELSE CASE WHEN L.DueDate IS NULL THEN L.DocDate ELSE L.DueDate END   END),getdate() )  >= 0 AND datediff(day,(CASE WHEN @AgeingDatePerameter=''Doc Date'' Then L.DocDate ELSE CASE WHEN L.DueDate IS NULL THEN L.DocDate ELSE L.DueDate END   END),getdate() )  <= @IntervalPerameter THEN ''0''+''-''+convert(VARCHAR,@IntervalPerameter)
+	WHEN datediff(day,(CASE WHEN @AgeingDatePerameter=''Doc Date'' Then L.DocDate ELSE CASE WHEN L.DueDate IS NULL THEN L.DocDate ELSE L.DueDate END   END),getdate() )  > @IntervalPerameter THEN ''>''+convert(VARCHAR,@IntervalPerameter)
+	END) AS Ageing,	
+	 (CASE 	WHEN datediff(day,(CASE WHEN @AgeingDatePerameter=''Doc Date'' Then L.DocDate ELSE CASE WHEN L.DueDate IS NULL THEN L.DocDate ELSE L.DueDate END   END),getdate() )  >= 0 AND datediff(day,(CASE WHEN @AgeingDatePerameter=''Doc Date'' Then L.DocDate ELSE CASE WHEN L.DueDate IS NULL THEN L.DocDate ELSE L.DueDate END   END),getdate() )  <= @IntervalPerameter THEN 0
+	WHEN datediff(day,(CASE WHEN @AgeingDatePerameter=''Doc Date'' Then L.DocDate ELSE CASE WHEN L.DueDate IS NULL THEN L.DocDate ELSE L.DueDate END   END),getdate() )  > @IntervalPerameter THEN 1
+	END) AS  AgeingSr
+
+ 
+		   
+ FROM #TempLedgerAdjustment L
+LEFT JOIN web.LedgerAccounts La ON l.LedgerAccountId = La.LedgerAccountId 
+LEFT JOIN web.DocumentTypes DT WITH (Nolock) ON DT.DocumentTypeId=L.DocTypeId
+WHERE TotalBalanceAmt IS NOT NULL 
+ORDER BY La.LedgerAccountName + La.LedgerAccountSuffix, L.SiteId, L.DivisionId, L.DocDate, L.DocNo 
+'
+
+
+
+EXEC     sp_executeSQL 
+         @SQL,
+        @ParameterDefinition,
+		@LedgerAccountGroupIdPerameter=@LedgerAccountGroupId,
+		@AsOnDatePerameter=@AsOnDate,
+		@LedgerAccountIdPerameter=@LedgerAccountId,
+		@SitePerameter=@Site,
+		@DivisionPerameter=@Division,
+		@DocumentTypePerameter=@DocumentType,
+		@ProcessIdPerameter=@ProcessId,
+		@CostCenterPerameter=@CostCenter,
+		@AgeingDatePerameter=@AgeingDate,
+		@IntervalPerameter=@Interval,
+		@MinimumAgePerameter=@MinimumAge,
+		@LessAmountPerameter=@LessAmount,
+		@GraterAmountPerameter=@GraterAmount,
+		@ReportTypePerameter=@ReportType
+
+END
+GO

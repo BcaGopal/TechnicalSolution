@@ -1,0 +1,106 @@
+http://server/Reports
+D:\CloudFinal\HomeFurnishing\Source\Report\Report
+
+--Update Web.JobOrderSettings
+SET 
+Web.JobOrderSettings.RetensionCostCenter=H.CostCenterId
+FROM 
+(
+SELECT H.CostCenterId,H.SiteId,H.DivisionId FROM web.costcenters H
+LEFT JOIN web.DocumentTypes DT WITH (Nolock) ON DT.DocumentTypeId=H.DocTypeId
+ WHERE H.CostCenterName LIKE '%2017-18%'  AND DT.DocumentCategoryId=343
+) H
+WHERE Web.JobOrderSettings.SiteId=H.SiteId AND Web.JobOrderSettings.DivisionId=H.DivisionId AND Web.JobOrderSettings.RetensionCostCenter IS NOT NULL
+
+-----------
+
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512271
+WHERE JobOrderSettingsId = 14
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512272
+WHERE JobOrderSettingsId = 15
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512276
+WHERE JobOrderSettingsId = 20
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512271
+WHERE JobOrderSettingsId = 21
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512272
+WHERE JobOrderSettingsId = 22
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512276
+WHERE JobOrderSettingsId = 25
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512276
+WHERE JobOrderSettingsId = 26
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512277
+WHERE JobOrderSettingsId = 30
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512278
+WHERE JobOrderSettingsId = 31
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512279
+WHERE JobOrderSettingsId = 32
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512280
+WHERE JobOrderSettingsId = 33
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512282
+WHERE JobOrderSettingsId = 34
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512283
+WHERE JobOrderSettingsId = 35
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512273
+WHERE JobOrderSettingsId = 37
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512274
+WHERE JobOrderSettingsId = 38
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512275
+WHERE JobOrderSettingsId = 39
+GO
+
+UPDATE Web.JobOrderSettings
+SET RetensionCostCenter = 512284
+WHERE JobOrderSettingsId = 64
+GO
+
+
+
+D:\Active Project\Projects\Source\Report\Report
+D:\Active Project\Projects\Source\Report\Report

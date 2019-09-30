@@ -1,0 +1,366 @@
+SELECT H.JobOrderSettingsId,H.SiteId,C.SiteId,H.DivisionId,C.DivisionId,H.DocTypeId,C.DocTypeId,C.CostCenterName
+FROM Web.JobOrderSettings H
+LEFT JOIN Web.CostCenters C WITH (Nolock) ON C.CostCenterId=H.RetensionCostCenter 
+LEFT JOIN web.DocumentTypes DT WITH (Nolock) ON DT.DocumentTypeId=H.DocTypeId
+WHERE  H.DivisionId=6 AND H.Siteid =17 AND DT.DocumentCategoryId=343
+--WHERE  H.DivisionId=6 AND H.Siteid <> 17 AND DT.DocumentCategoryId=343
+--WHERE  H.DivisionId IN (1,2) AND H.Siteid =17 AND DT.DocumentCategoryId=343 AND H.DocTypeId=458
+
+http://server/Reports
+http://www.tutorialsteacher.com/linq/linq-tutorials
+D:\Active Project\Projects\Source\Report\Report
+Web.SpRep_PaymentAdviceCalculation
+Web.spRep_ContractorOutstandingReport
+D:\SuryaCarpet\Rug Project 06March2019\Projects\Source\Report\Report
+ftp://192.168.2.13/SOFT/
+
+http://192.168.2.17/ReportSERVER
+Report
+
+D:\Gopal Active Projects\VendorManagement\branches
+D:\Active Project\Projects\Source\Report\Report
+
+commit 
+pull
+push
+
+SELECT * FROM Web.UnitConversions WHERE ToUnitId = 'CM2'
+
+Web.sp_PostRequisitionForWeavingOrder
+
+Web.sp_GetProductUidListForWeavingOrderCancel
+--EXEC Web.sp_GetProductUidListForWeavingOrderCancelTest @ProductUidHeaderId=@ProductUidHeaderId,@SiteId=@SiteId,@DivisionId=@DivisionId,@ProcessId=@ProcessId
+C:\Windows\System32\drivers\etc
+--[Web].[SpUpdate_JobOrderStatusUpdateFromCancel] @JobCancelHeaderId
+
+SELECT * FROM Web.CostCenters WHERE CostCenterName='16-0539' AND SiteId=17 AND DivisionId=1
+add loss .500 to 0.05 (mithelesh)
+
+SELECT * FROM Web.JobOrderHeaders WHERE DocNo='16-0589' AND SiteId='17' AND DivisionId='1' AND DocTypeId=458
+add loss 25 to 0.05 (mithelesh)
+
+
+SELECT * FROM Web.JobOrderHeaders WHERE CostCenterId=520508
+SELECT * FROM web.JobOrderLines WHERE JobOrderHeaderId=531414
+SELECT * FROM Web.CostCenters WHERE CostCenterId=520508 CostCenterName='16-3638' AND SiteId='17' AND DivisionId='6'
+ledgeraccount 3313 TO 3251
+SELECT * FROM Web.ProductUids WHERE ProductUidHeaderId IN (195358, 195359, 195360)
+genPersonId 101 TO 39
+
+
+
+
+
+
+
+SELECT * FROM Web.ProductUids WHERE GenDocId=530242 AND GenDocTypeId=458 ProductUidName='2921368'
+SELECT * FROM Web.JobOrderHeaders WHERE JobOrderHeaderId=530242
+
+C:\Users\Gopal\Documents\Visual Studio 2015\Projects\WebApplication1\WebApplication1\Controllers
+
+
+
+(352 issue, 353 rec , 482 issue, 852 issue, 1853 rec, 1861 issue)
+
+
+
+SELECT PL.* FROM Web.SaleDispatchHeaders H 
+LEFT JOIN Web.SaleDispatchLines L WITH (Nolock) ON L.SaleDispatchHeaderId=H.SaleDispatchHeaderId
+LEFT JOIN web.PackingLines PL WITH (Nolock) ON PL.PackingLineId=L.PackingLineId
+WHERE H.DocDate BETWEEN '01-July-16' AND '31-July-16'
+AND  PL.PassQty <> isnull(PL.Qty,0)+isnull(PL.LossQty,0)
+
+3019442
+
+SELECT * FROM Web.DocumentTypeTimePlans WHERE DocTypeId=707 AND Type='Create' AND SiteId IN (17,19, 20, 22, 27, 30, 32) AND DivisionId=6
+
+Update Web.ProductUids 
+SET 
+Web.ProductUids.LastTransactionLineId=H.JobReceiveLineId,
+Web.ProductUids.Status='Receive',
+Web.ProductUids.LastTransactionDocId=H.JobReceiveHeaderId,
+Web.ProductUids.LastTransactionDocNo=H.DocNo,
+Web.ProductUids.LastTransactionDocTypeId=H.DocTypeId,
+Web.ProductUids.LastTransactionPersonId=H.JobWorkerId,
+Web.ProductUids.CurrenctGodownId=GodownId,
+Web.ProductUids.CurrenctProcessId=H.ProcessId
+FROM 
+(
+SELECT L.ProductUidId,L.JobReceiveLineId,H.ProcessId,H.JobWorkerId,H.DocTypeId,H.DocNo,H.JobReceiveHeaderId,H.GodownId 
+FROM Web.JobReceiveHeaders H
+LEFT JOIN Web.JobReceiveLines L WITH (Nolock) ON L.JobReceiveHeaderId=H.JobReceiveHeaderId
+LEFT JOIN web.JobOrderLines JOL WITH (Nolock) ON JOL.JobOrderLineId=L.JobOrderLineId
+WHERE JOL.JobOrderHeaderId=537949
+) H
+WHERE Web.ProductUids.ProductUidId=H.ProductUidId
+
+################
+
+Update  Web.ProductUids 
+SET 
+Web.ProductUids.LastTransactionLineId=H.JobOrderLineId,
+Web.ProductUids.Status='Issue',
+Web.ProductUids.LastTransactionDocId=H.JobOrderHeaderId,
+Web.ProductUids.LastTransactionDocNo=H.DocNo,
+Web.ProductUids.LastTransactionDocTypeId=H.DocTypeId,
+Web.ProductUids.LastTransactionPersonId=H.JobWorkerId,
+Web.ProductUids.CurrenctGodownId=NULL,
+Web.ProductUids.CurrenctProcessId=H.ProcessId
+FROM 
+(
+SELECT L.ProductUidId,L.JobOrderLineId,H.GodownId,H.ProcessId,H.JobWorkerId,H.DocTypeId,H.DocNo,H.JobOrderHeaderId FROM web.JobOrderHeaders H
+LEFT JOIN Web.JobOrderLines L WITH (Nolock) ON L.JobOrderHeaderId=H.JobOrderHeaderId
+WHERE H.JobOrderHeaderId=538226
+) H
+WHERE Web.ProductUids.ProductUidId=H.ProductUidId
+
+
+
+
+
+ (CASE WHEN DateDiff(Day,V_Date,'3/27/2017'  )>= 0 AND  DateDiff(Day,V_Date,'3/27/2017' )<=180 THEN  PendingAmt Else 0 end ) AS AmtDay1, 
+(CASE WHEN DateDiff(Day,V_Date,'3/27/2017' )>180 THEN  PendingAmt ELSE 0 end) AS AmtDay2, 180 As Days 
+
+
+--Start not match for main to otherBranch----------
+
+SELECT V1.*, V2.*
+FROM (
+SELECT H.StockHeaderId, H.PersonId, IsNull(Sum(L.Qty_Iss),0) AS Qty_Iss, IsNull(Sum(L.Qty_Rec),0) AS Qty_Rec
+FROM Web.StockHeaders H 
+LEFT JOIN Web.Stocks L ON H.StockHeaderId = L.StockHeaderId
+LEFT JOIN Web.Sites S ON H.PersonId = S.PersonId
+WHERE H.DocDate >= '01/Apr/2016'
+AND H.DocTypeId IN (456,461)
+AND S.SiteId IS NOT NULL
+GROUP BY H.StockHeaderId, H.PersonId
+) AS V1
+
+LEFT JOIN (
+SELECT H.ReferenceDocId AS StockHeaderId, S.PersonId, IsNull(Sum(L.Qty_Iss),0)  AS Qty_Iss, IsNull(Sum(L.Qty_Rec),0)  AS Qty_Rec
+FROM Web.StockHeaders H 
+LEFT JOIN Web.Stocks L ON H.StockHeaderId = L.StockHeaderId
+LEFT JOIN Web.Sites S ON H.SiteId = S.SiteId
+WHERE H.DocDate >= '1/Apr/2016'
+AND H.SiteId <> 17
+GROUP BY H.ReferenceDocId, S.PersonId
+) AS V2 ON V1.StockHeaderId = V2.StockHeaderId AND V1.PersonId = V2.PersonId
+WHERE IsNull(V1.Qty_Iss,0) <> IsNull(V2.Qty_Rec,0) OR IsNull(V1.Qty_Rec,0) <> IsNull(V2.Qty_Iss,0)
+
+---End---------------
+
+
+
+
+
+
+
+
+
+
+
+DECLARE @Id INT =1824001
+
+
+declare @StockHeaderId table ( ID int )
+DECLARE @SHId INT        
+
+INSERT INTO Web.StockHeaders
+ (DocHeaderId, DocTypeId, DocDate, DocNo, DivisionId, SiteId, CurrencyId, PersonId, ProcessId, FromGodownId, GodownId, Remark, Status, CreatedBy, CreatedDate, ModifiedBy, ModifiedDate, OMSId, CostCenterId, MachineId, GatePassHeaderId, LedgerHeaderId, ContraLedgerAccountId, ReferenceDocTypeId, ReferenceDocId, LockReason, LedgerAccountId, ReviewCount, ReviewBy, IsGatePassPrinted) output inserted.StockHeaderId into @StockHeaderId
+SELECT H.DocHeaderId,639,H.DocDate,H.DocNo,6,S.SiteId,H.CurrencyId,H.PersonId,H.ProcessId,H.FromGodownId,
+S.DefaultGodownId,H.Remark,0,H.CreatedBy,H.CreatedDate,H.ModifiedBy,H.ModifiedDate,H.OMSId,H.CostCenterId,H.MachineId,NULL,H.LedgerHeaderId,H.ContraLedgerAccountId,H.DocTypeId,H.StockHeaderId,'Entry generated automatically for material issued/return from main branch.',H.LedgerAccountId,H.ReviewCount,H.ReviewBy,NULL
+ FROM Web.StockHeaders H
+LEFT JOIN web.Sites S WITH (Nolock) ON S.PersonId=H.PersonId
+WHERE H.StockHeaderId=@Id
+
+SELECT * FROM @StockHeaderId
+
+
+
+
+INSERT INTO Web.Stocks 
+(StockHeaderId, ProductId, ProcessId, GodownId, LotNo, CostCenterId, Qty_Iss, Qty_Rec, Rate, Specification, Dimension1Id, Dimension2Id, OMSId, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, DocDate, DocLineId)
+SELECT 1835108,L.ProductId,L.FromProcessId,S.DefaultGodownId,L.LotNo,L.CostCenterId,0,L.Qty,0,L.Specification,L.Dimension1Id,L.Dimension2Id,L.OMSId,L.CreatedBy,L.ModifiedBy,L.CreatedDate,L.ModifiedDate,H.DocDate,L.StockLineId
+FROM Web.StockLines L  
+LEFT JOIN Web.StockHeaders H ON H.StockHeaderId=L.StockHeaderId
+LEFT JOIN Web.Sites S WITH (Nolock) ON S.PersonId=H.PersonId
+WHERE L.StockHeaderId=1824001
+  
+SELECT * FROM Web.Stocks WHERE StockHeaderId=1835108
+	
+1835108
+
+
+
+INSERT INTO Web.StockLines (StockHeaderId,ProductId, FromProcessId, LotNo,Qty, Remark, Dimension1Id, Dimension2Id, Specification, Rate, Amount, CreatedBy, ModifiedBy, CreatedDate, ModifiedDate, StockId,DocNature, ReferenceDocTypeId,ReferenceDocLineId, LockReason)
+SELECT Sh.StockHeaderId,S.ProductId,S.ProcessId,S.LotNo,
+S.Qty_Rec,S.Remark,S.Dimension1Id,S.Dimension2Id,S.Specification,0,0,S.CreatedBy,S.ModifiedBy,S.CreatedDate,S.ModifiedDate,
+S.StockId,'R',Sh.ReferenceDocTypeId,L.StockLineId,'Entry generated automatically for material issued/return from main branch.'
+ FROM Web.Stocks S WITH (Nolock)
+LEFT JOIN web.StockHeaders Sh WITH (Nolock) ON Sh.StockHeaderId=S.StockHeaderId
+LEFT JOIN web.StockLines L WITH (Nolock) ON L.StockHeaderId=S.DoclineId
+WHERE S.StockHeaderId=1835108
+
+
+------------------
+ALTER PROCEDURE Web.spRep_LedgerSummary
+    @Site VARCHAR(20) = NULL,
+	@FromDate NVARCHAR(20) = NULL,
+	@ToDate NVARCHAR(20) = NULL,
+	@LedgerAccount VARCHAR(Max) = NULL,
+	@Process VARCHAR(Max) = NULL
+	
+AS
+BEGIN
+ 
+ SELECT VMain.ProcessId, VMain.Sr, Max(P.ProcessName) AS ProcessName, Max(VMain.Cr_DocType) AS Cr_DocType, sum(isnull(VMain.AmtDr,0)) AS Rec_Qty,Max(VMain.Dr_DocType) AS Dr_DocType, sum(isnull(VMain.AmtCr,0)) AS Iss_Qty,
+ Max(VMain.SiteId) AS SiteId,NULL AS DivisionId,'LedgerSummary.rdl'  as ReportName, 'Ledger Summary' as ReportTitle, NULL as SubReportProcList
+ FROM 
+ (
+-- For Opening
+SELECT 1 AS Sr, SH.SiteId, SH.ProcessId , 'Opeing' AS Cr_DocType,
+sum(isnull(H.AmtCr,0)) - sum(isnull(H.AmtDr,0)) AS AmtDr, NULL AS Dr_DocType,  0 AS  AmtCr    
+FROM  
+( 
+SELECT * FROM web.LedgerHeaders SH WITH (Nolock) WHERE SH.SiteId = @Site  
+AND ( @Process is null or SH.ProcessId  IN (SELECT Items FROM [dbo].[Split] (@Process, ','))) 
+AND ( @FromDate is null or @FromDate > SH.DocDate )  
+) SH 
+LEFT JOIN web.Ledgers H WITH (Nolock) ON SH.LedgerHeaderId = H.LedgerHeaderId 
+WHERE  H.LedgerAccountId IS NOT NULL 
+AND ( @LedgerAccount is null or H.LedgerAccountId IN (SELECT Items FROM [dbo].[Split] (@LedgerAccount, ','))) 
+GROUP BY SH.SiteId, SH.ProcessId  
+HAVING Round(sum(isnull(H.AmtCr,0)) - sum(isnull(H.AmtDr,0)),4) <> 0
+
+UNION ALL 
+-- For Receive
+SELECT row_number() OVER ( PARTITION BY SH.ProcessId  ORDER BY Max(DT.DocumentTypeName)  )+1 AS Sr, 
+SH.SiteId, SH.ProcessId, Max(DT.DocumentTypeName)  AS Cr_DocType,
+sum(isnull(H.AmtCr,0))  AS AmtDr, NULL AS Dr_DocType,  0 AS  AmtCr   
+FROM  
+( 
+SELECT * FROM web.LedgerHeaders SH WITH (Nolock) WHERE SH.SiteId = @Site  
+AND ( @Process is null or SH.ProcessId  IN (SELECT Items FROM [dbo].[Split] (@Process, ',')))  
+AND ( @FromDate is null or @FromDate <= SH.DocDate ) 
+AND ( @ToDate is null or @ToDate >= SH.DocDate )  
+) SH 
+LEFT JOIN web.Ledgers H WITH (Nolock) ON SH.LedgerHeaderId = H.LedgerHeaderId 
+LEFT JOIN web.DocumentTypes DT WITH (Nolock) ON DT.DocumentTypeId = SH.DocTypeId 
+WHERE  H.LedgerAccountId IS NOT NULL 
+AND ( @LedgerAccount is null or H.LedgerAccountId IN (SELECT Items FROM [dbo].[Split] (@LedgerAccount, ','))) 
+AND isnull(H.AmtCr,0) <> 0
+GROUP BY SH.SiteId,SH.ProcessId, SH.DocTypeId
+
+
+UNION ALL 
+-- For Issue
+SELECT row_number() OVER ( PARTITION BY SH.ProcessId  ORDER BY Max(DT.DocumentTypeName)  )+1 AS Sr, 
+SH.SiteId, SH.ProcessId,  NULL  AS Cr_DocType,
+0 AS AmtDr, Max(DT.DocumentTypeName) AS Dr_DocType,  sum(isnull(H.AmtDr,0))  AS  AmtCr   
+FROM  
+( 
+SELECT * FROM web.LedgerHeaders SH WITH (Nolock) WHERE SH.SiteId = @Site  
+AND ( @Process is null or SH.ProcessId  IN (SELECT Items FROM [dbo].[Split] (@Process, ','))) 
+AND ( @FromDate is null or @FromDate <= SH.DocDate ) 
+AND ( @ToDate is null or @ToDate >= SH.DocDate )  
+) SH 
+LEFT JOIN web.Ledgers H WITH (Nolock) ON SH.LedgerHeaderId = H.LedgerHeaderId 
+LEFT JOIN web.DocumentTypes DT WITH (Nolock) ON DT.DocumentTypeId = SH.DocTypeId 
+WHERE  H.LedgerAccountId IS NOT NULL 
+AND ( @LedgerAccount is null or H.LedgerAccountId IN (SELECT Items FROM [dbo].[Split] (@LedgerAccount, ','))) 
+AND isnull(H.AmtDr,0) <> 0
+GROUP BY SH.SiteId,SH.ProcessId, SH.DocTypeId
+
+) AS VMain
+LEFT JOIN Web.Sites S WITH (Nolock) ON S.SiteId = VMain.SiteId
+LEFT JOIN Web.Processes  P WITH (Nolock) ON P.ProcessId = VMain.ProcessId
+GROUP BY  VMain.ProcessId, VMain.Sr
+ 
+
+End
+GO
+
+
+
+
+
+SELECT * FROM Web.ProductUids WHERE ProductUidName IN ('2952224','2952225','2952226','2952228','2952231','2952233','2952234','2952236','2952243','2952246','2952247','2952250','2952260','2952261','2952265','2952267','2951748','2951749','2951750','2951751','2951752','2951753','2951754','2951755','2951756','2951757','2951758','2951759','2951760','2951761','2951762','2951763','2951764','2951765','2951766','2951767','2951768','2951769','2951770','2951771','2951772','2951773','2951774','2951775','2951776','2951777','2951778','2951779','2951780','2951781','2951782','2951783','2951784','2951785','2951786','2951787','2951788','2951789','2951790','2951791','2951792','2951793','2951794','2951795','2951796','2951797','2951798','2951799','2951800','2951801','2951802','2951803','2951804','2951805','2951806','2951807','2951808','2951809','2951810','2951811','2951812','2951813','2951814','2951815','2951816','2951817','2951818','2951819','2951820','2951821','2951822','2951823','2951824','2951825','2951826','2951827','2951828','2951829','2951830','2951831','2951832','2951833','2951834','2951835','2951836','2951837','2951838','2951839','2951840','2951841','2951842','2951843','2951844','2951845','2951846','2951847','2951848','2951849','2951850','2951851','2951852','2951853','2951854','2951855','2951856','2951857','2951924','2951925','2951926','2951927','2951928','2951932','2951935','2951936','2951937','2951938','2951939','2951941','2951949','2951950','2951952','2951953','2951954','2951955','2951959','2951960','2951961','2951962','2951963','2951964','2951970','2951972','2951975','2951977','2951978','2951982','2951983','2951985','2951986','2951988','2951990','2951992','2951993','2951994','2951995','2951999','2952001','2952003','2952004','2952005','2952006','2952009','2952011','2952012','2952013','2952014','2952018','2952021','2952022','2952025','2952027','2952028','2952029','2952033','2952034','2952035','2952036','2952037','2952038','2952039','2952042','2952044','2952045','2952046','2952047','2952048','2952049','2952052','2952054','2952055','2952056','2952057','2952058','2952059','2952060','2952061','2952062','2952063','2952065','2952066','2952069','2952070','2952072','2952074','2952075','2952076','2952078','2952080','2952082','2952084','2952085','2952086','2952087','2952088','2952089','2952090','2952093','2952096','2952097','2952098','2952099','2952100','2952102','2952103','2952105','2952107','2952109','2952111','2952114','2952115','2952116','2952118','2952119','2952120','2952122','2952123','2952124','2952125','2952127','2952132','2952134','2952139','2952140','2952141','2952144','2952145','2952146','2952149','2952151','2952152','2952154','2952155','2952156','2952159','2952160','2952161','2952163','2952164','2952165','2952166','2952167','2952168','2952169','2952172','2952173','2952175','2952179','2952180','2952183','2952184','2952187','2952188','2952191','2952192','2952193','2952195','2952198','2952200','2952201','2952203','2952205','2952206','2952210','2952211','2952214','2952215','2952219','2952221','2952222','2952223')
+
+SELECT * FROM Web.ProductUids WHERE ProductUidName IN ('2951940','2951942','2951943','2951944','2951945','2951946','2951948','2951951','2951956','2951958','2951965','2951968','2951971','2951973','2951974','2951976','2951996','2951997','2951998','2952000','2952008','2952010','2952015','2952016','2952017','2952032','2952040','2952041','2952043','2952050','2952051','2952064','2952068','2952073','2952079','2952081','2952091','2952092','2952094','2952095','2952101','2952104','2952106','2952108','2952110','2952113','2952117','2952126','2952128','2952130','2952131','2952133','2952135','2952142','2952147','2952148','2952157','2952162','2952170','2952171','2952174','2952177','2952178','2952182','2952185','2952189','2952194','2952202','2952204','2952208','2952209','2952212','2952213','2952216','2952217','2952218','2952220','2952227','2952229','2952232','2952237','2952238','2952239','2952240','2952241','2952242','2952244','2952248','2952249','2952252','2952262')
+
+SELECT * FROM Web.ProductUids WHERE ProductUidName IN ('295193','295203','2951929','2951930','2951931','2951934','2951947','2951957','2951966','2951967','2951969','2951979','2951980','2951981','2951984','2951987','2951989','2951991','2952002','2952007','2952019','2952020','2952023','2952024','2952026','2952030','2952053','2952067','2952071','2952077','2952083','2952112','2952121','2952129','2952136','2952137','2952138','2952143','2952150','2952153','2952158','2952176','2952181','2952186','2952190','2952196','2952197','2952199','2952207','2952230','2952235','2952245','2952251','2952253','2952254','2952255','2952256','2952257','2952258','2952259','2952263','2952264','2952266')
+
+
+
+add-migration name
+update-database
+\\ser-586
+
+-----------
+D:\Gopal Active Projects\Projects\Source\Data\ApplicationDbContext
+>tool>Nuget Package Manager >package manager console
+default Project:Data
+Add-Migration City
+update-database
+
+
+
+
+DELETE FROM Web.StockAdjs
+WHERE StockAdjId IN (29136,29354) 
+
+DELETE FROM Web.SaleDispatchLines
+WHERE SaleDispatchLineId IN (4734,4952)
+
+DELETE FROM Web.Stocks
+WHERE StockId IN (49999,50217)
+
+
+Arpit@321
+
+
+UPDATE Web.DocumentTypeTimePlans
+SET  DocTypeId = 708
+	, DivisionId = 6
+	, SiteId = 17
+	, Type = 'Create'
+	, Days = 2
+	, CreatedBy = 'Admin'
+	, ModifiedBy = 'Admin'
+	, CreatedDate = '2016-04-12 13:07:42.413'
+	, ModifiedDate = '2016-04-12 13:07:42.413'
+WHERE DocumentTypeTimePlanId = 346786
+
+
+Update Web.JobInvoiceLineCharges
+SET 
+Web.JobInvoiceLineCharges.ChargeTypeId=(CASE WHEN H.ChargeId=48 THEN 6 
+                                            WHEN H.ChargeId=54 THEN 7
+                                            WHEN H.ChargeId=55 THEN 8
+                                            WHEN H.ChargeId=56 THEN 9
+                                            ELSE NULL END) 
+FROM 
+(
+SELECT Id,LineTableId,ChargeId FROM Web.JobInvoiceLineCharges WHERE HeaderTableId IN (50021461)
+AND ChargeId IN (48, 54, 55, 56)
+) H
+WHERE Web.JobInvoiceLineCharges.LineTableId=H.LineTableId AND Web.JobInvoiceLineCharges.ChargeId=H.ChargeId AND Web.JobInvoiceLineCharges.Id=H.Id
+
+
+SELECT * FROM Web.UnitConversions WHERE ProductId IN (SELECT ProductId FROM Web.Products WHERE ProductName LIKE '%-46' AND DivisionId=6)
+AND ToUnitId='ft' AND ToQty <> 19
+
+
+
+/* temp arpit
+IF (@FromDate IS NOT NULL) BEGIN SET @CondStr3 += N' AND @FromDateParameter <= ( CASE WHEN @DateFilterOnParameter =''Purja Close Date'' THEN CC.CloseDate ELSE  CC.StartDate  END )' END 
+IF (@ToDate IS NOT NULL) BEGIN SET @CondStr3 += N' AND @ToDateParameter >= ( CASE WHEN @DateFilterOnParameter =''Purja Close Date'' THEN CC.CloseDate ELSE  CC.StartDate END )' END  
+*/
+
+http://192.168.2.24/ReportServer
+Folder Reports
+
+Hi Team,
+Plz check the mail.
+ID : it.suryarugs@gmail.com 
+PWS : suryarugs@123

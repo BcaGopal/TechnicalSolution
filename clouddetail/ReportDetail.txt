@@ -1,0 +1,24 @@
+TargetReportFolder: Report
+TargetReportURl:http://192.168.2.23/ReportSERVER
+Id=administrator
+Pass:Suryarugs@$$$
+browse Url:http://server/Reports
+-------------------------
+TargetReportFolder: HomeFurnishingReports
+TargetReportFolder: SuryaRugReports
+TargetReportURl: https://suryadbvm.centralindia.cloudapp.azure.com/ReportServer/
+
+
+
+https://suryadbvm.centralindia.cloudapp.azure.com/Reports/browse/
+Id:Deployer
+pwd:Passw0rd$321
+F:\Ftp\AppFiles\ReportImages
+
+reportViewer.ProcessingMode = ProcessingMode.Local;
+            ServerReport serverReport = reportViewer.ServerReport;
+            serverReport.ReportServerUrl = new Uri(ConfigurationManager.AppSettings["RSServer"]);
+            serverReport.ReportPath = ConfigurationManager.AppSettings["RSPath"] + ReportName;
+            IReportServerCredentials irsc = new CustomReportCredentials(ConfigurationManager.AppSettings["RSID"], ConfigurationManager.AppSettings["RSPWD"], ConfigurationManager.AppSettings["RSDomain"]);
+            serverReport.ReportServerCredentials = irsc;
+            SetReportAttibutes(reportViewer, reportdatasource);
