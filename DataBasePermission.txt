@@ -1,0 +1,63 @@
+USE [ASPState]
+GO
+	DECLARE @return_value int
+	EXEC    @return_value = [dbo].[CreateTempTables]
+	SELECT  'Return Value' = @return_value
+GO
+
+USE [ASPState]
+grant update   on schema ::dbo to [DATA-SERVER\RugApplication] 
+grant select   on schema ::dbo to [DATA-SERVER\RugApplication] 
+grant Insert   on schema ::dbo to [DATA-SERVER\RugApplication] 
+grant delete   on schema ::dbo to [DATA-SERVER\RugApplication] 
+
+grant update   on schema ::dbo to [DATA-SERVER\DyeingApp]
+grant select   on schema ::dbo to [DATA-SERVER\DyeingApp]
+grant Insert   on schema ::dbo to [DATA-SERVER\DyeingApp] 
+grant delete   on schema ::dbo to [DATA-SERVER\DyeingApp]
+
+grant update   on schema ::dbo to [DATA-SERVER\VendorMgtApp]
+grant select   on schema ::dbo to [DATA-SERVER\VendorMgtApp] 
+grant Insert   on schema ::dbo to [DATA-SERVER\VendorMgtApp]
+grant delete   on schema ::dbo to [DATA-SERVER\VendorMgtApp]
+
+USE [tempdb]
+grant update   on schema ::dbo to [DATA-SERVER\RugApplication] 
+grant select   on schema ::dbo to [DATA-SERVER\RugApplication] 
+grant Insert   on schema ::dbo to [DATA-SERVER\RugApplication] 
+grant delete   on schema ::dbo to [DATA-SERVER\RugApplication] 
+
+grant update   on schema ::dbo to [DATA-SERVER\DyeingApp]
+grant select   on schema ::dbo to [DATA-SERVER\DyeingApp] 
+grant Insert   on schema ::dbo to [DATA-SERVER\DyeingApp]
+grant delete   on schema ::dbo to [DATA-SERVER\DyeingApp]
+
+grant update   on schema ::dbo to [DATA-SERVER\VendorMgtApp]
+grant select   on schema ::dbo to [DATA-SERVER\VendorMgtApp] 
+grant Insert   on schema ::dbo to [DATA-SERVER\VendorMgtApp]
+grant delete   on schema ::dbo to [DATA-SERVER\VendorMgtApp]
+
+
+
+grant create procedure on database::Logindb to [DATA-SERVER\RugApplication]
+
+use [DyeingHouse]
+grant execute on Schema::web to [DATA-SERVER\RugApplication]
+grant execute on Schema::dbo to [DATA-SERVER\RugApplication]
+
+use [RUG]
+grant execute on Schema::web to [Gopal]
+grant execute on Schema::dbo to [Gopal]
+
+
+grant create procedure on database::Logindb to [DATA-SERVER\RugApplication]
+grant execute on Schema::web to [DATA-SERVER\RugApplication]
+
+
+reportingsrv
+5#f-Ggr6,GF[u_
+
+Data Source=192.168.2.25;Initial Catalog=RUG;Integrated Security=false; User Id=reportingsrv; pwd=5#f-Ggr6,GF[u_
+
+
+grant execute on schema ::web to reportingsrv
